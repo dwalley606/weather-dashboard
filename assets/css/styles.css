@@ -1,0 +1,13 @@
+.navbar {
+    padding: 30px;
+}
+
+.bg-purple {
+    background-color: purple;
+}
+
+h2 {
+    font-size: 2vw;
+    white-space: nowrap;
+    justify-content: center;
+}
