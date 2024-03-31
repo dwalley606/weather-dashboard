@@ -4,6 +4,13 @@ const submitButton = document.querySelector('button[type="submit"]');
 const searchResults = document.getElementById('search-results')
 
 
+
+
+
+
+window.onload = function() {
+    localStorage.removeItem('userInputs');
+};
 // Add an event listener to the submit button
 submitButton.addEventListener('click', function(event) {
     event.preventDefault();
