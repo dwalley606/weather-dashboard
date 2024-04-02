@@ -18,7 +18,15 @@ submitButton.addEventListener('click', function(event) {
     document.querySelector('.main-content').innerHTML = '';
     
     // Add the new search to the array of stored user inputs
-    storedUserInputs.push(userInput);
+    if (!storedUserInputs.includes(userInput)) {
+        storedUserInputs.push(userInput);
+
+        const button = document.createElement('button');
+        button.textContent = userInput;
+        searchResults.appendChild(button);
+    } else {
+        alert('You have already entered this input.');
+    }
     
     // Update local storage with the updated array
     localStorage.setItem('userInputs', JSON.stringify(storedUserInputs));
@@ -29,7 +37,7 @@ submitButton.addEventListener('click', function(event) {
     searchResults.innerHTML = '';
 
     getAPI(userInput) 
-    getForecast(userInput)
+    /* getForecast(userInput) */
     // Iterate over stored user inputs and create a button for each search
     storedUserInputs.forEach(userInput => {
         const button = document.createElement('button');
@@ -37,18 +45,20 @@ submitButton.addEventListener('click', function(event) {
         searchResults.appendChild(button);
     });
 
-    searchResults.addEventListener('click', function(event) {
-        if (event.target.tagName === 'BUTTON') {
-            const searchTerm = event.target.textContent;
-
-            document.querySelector('.main-content').innerHTML = '';
-
-            getAPI(searchTerm);
-            
-        }
-    });
+    
 
     
+});
+
+searchResults.addEventListener('click', function(event) {
+    if (event.target.tagName === 'BUTTON') {
+        const searchTerm = event.target.textContent;
+
+        document.querySelector('.main-content').innerHTML = '';
+
+        getAPI(searchTerm);
+        
+    }
 });
 
 function kelvinToFahrenheit(kelvin) {
@@ -85,17 +95,56 @@ function getAPI(userInput) {
         // Append the card to the main content section
         document.querySelector('.main-content').appendChild(card);
 
-        return data;
+        const lat = data.coord.lat;
+        const lon = data.coord.lon;
+
+        // Make the second API call using the extracted lat and lon
+        const forecastURL = "https://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + lon + "&appid=" + APIkey;
+
+        return fetch(forecastURL);
     })
-    .catch(function(error) {
-        console.error('Error fetching data: ', error);
+    .then(function(response) {
+        return response.json();
     })
+    .then(function(data) {
+        console.log(data);
+
+        const forecastContent = document.querySelector('.forecast-content');
+        forecastContent.innerHTML = '';
+
+        const next5days = data.list.filter((day, index) => index % 8 === 0);
+        next5days.forEach(day => {
+            const dayCard = document.createElement('div');
+            dayCard.classList.add('day-card');
+
+            const date = new Date(day.dt * 1000).toDateString();
+            const icon = day.weather[0].icon;
+            const temperature = kelvinToFahrenheit(day.main.temp).toFixed(2);
+            const windSpeed = day.wind.speed;
+            const humidity = day.main.humidity;
+
+            dayCard.innerHTML = `
+            <div class="day-info">
+                <p>Date: ${date}</p>
+                <img src="http://openweathermap.org/img/w/${icon}.png" alt="Weather Icon">
+                <p>Temp: ${temperature} °F</p>
+                <p>Wind: ${windSpeed} mph</p>
+                <p>Humidity: ${humidity}%</p>
+            </div> 
+            `;
+
+            forecastContent.appendChild(dayCard);
+        })
+    });
+   
 }
 
-function getForecast(coord) {
+// Call the combined function with userInput
+
+
+/* function getForecast(lat, long) {
     
-    const lat = coord.lat;
-    const long = coord.long;
+    
     const forecastURL = "https://api.openweathermap.org/data/2.5/forecast?lat=" + lat + "&lon=" + long + "&appid=" + APIkey
 
     return fetch(forecastURL)
@@ -112,6 +161,13 @@ function getForecast(coord) {
 
 
 }
+
+getAPI(userInput)
+.then(function(data) {
+    const lat = data.coord.lat;
+    const long = data.coord.lon;
+    return getForecast(lat, long);
+}) */
 
 
 
